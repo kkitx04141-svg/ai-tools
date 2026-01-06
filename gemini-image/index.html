@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 生图工具 · Gemini</title>
+
+<style>
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text);
+}
+
+.container {
+  max-width: 880px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.header p {
+  margin-top: 8px;
+  color: var(--muted);
+  max-width: 640px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+  padding: 28px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.field {
+  margin-top: 14px;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+textarea,
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+input[type="file"] {
+  font-size: 14px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading {
+  font-size: 14px;
+  color: var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>AI 生图工具</h1>
+    <p>
+      支持文生图 / 图生图，用于电商设计、方案探索与视觉创作。
+      上传参考图可增强一致性，不上传即为纯文本生成。
+    </p>
+  </div>
+
+  <form
+    class="card"
+    action="WEBHOOK_URL"
+    method="POST"
+    enctype="multipart/form-data"
+    onsubmit="handleSubmit(this)"
+  >
+
+    <!-- Prompt -->
+    <div class="section">
+      <div class="section-title">提示词</div>
+      <textarea
+        name="prompt"
+        placeholder="例如：现代极简风格的办公椅，白色背景，商业产品摄影，干净柔光"
+        required
+      ></textarea>
+    </div>
+
+    <!-- Reference Images -->
+    <div class="section">
+      <div class="section-title">参考图片（可选）</div>
+      <input type="file" name="images" accept="image/*" multiple />
+      <div class="hint">
+        最多上传 10 张。不上传即为文生图。
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="section">
+      <div class="section-title">生成设置</div>
+      <div class="grid">
+        <div class="field">
+          <label>画面比例</label>
+          <select name="aspectRatio">
+            <option value="1:1">1:1（方形）</option>
+            <option value="3:4">3:4（竖图）</option>
+            <option value="4:5">4:5（竖图）</option>
+			<option value="9:16">9:16（竖图）</option>
+            <option value="4:3">4:3（竖图）</option>
+            <option value="5:4">5:4（横图）</option>
+            <option value="16:9">16:9（宽屏）</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>分辨率</label>
+          <select name="imageSize">
+            <option value="1K">1K</option>
+            <option value="2K" selected>2K</option>
+            <option value="4K">4K</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>生成数量</label>
+          <input type="number" name="count" value="2" min="1" max="6" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="loading" id="loadingText" style="display:none;">
+        正在生成图片，请稍候…
+      </div>
+      <button type="submit" id="submitBtn">
+        开始生成
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+function handleSubmit(form) {
+  const btn = document.getElementById("submitBtn");
+  const loading = document.getElementById("loadingText");
+  btn.disabled = true;
+  loading.style.display = "block";
+}
+</script>
+
+</body>
+</html>
