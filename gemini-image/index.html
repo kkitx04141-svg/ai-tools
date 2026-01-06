@@ -311,6 +311,21 @@
   </div>
 
 
+    <!-- ✅ Lightbox 预览弹窗：一定要放在 script 之前 -->
+  <div id="lightbox" class="lb" aria-hidden="true">
+    <div class="lb__backdrop"></div>
+    <div class="lb__panel" role="dialog" aria-modal="true" aria-label="Image preview">
+      <div class="lb__top">
+        <div class="lb__title" id="lbTitle">预览</div>
+        <div class="lb__actions">
+          <a id="lbDownload" class="lb__btn" download>下载</a>
+          <button id="lbClose" class="lb__btn lb__btn--ghost" type="button">关闭</button>
+        </div>
+      </div>
+      <img id="lbImg" class="lb__img" alt="preview" />
+    </div>
+  </div>
+
   <script>
   const WEBHOOK_URL = "https://xiucai-ai.xyz/webhook-test/gemini-image";
 
@@ -322,17 +337,12 @@
   const elSubmit = document.getElementById("submitBtn");
   const elClear = document.getElementById("clearBtn");
 
-  // Lightbox elements
+  // Lightbox elements（✅ 现在这里一定能拿到，不会是 null）
   const lightbox = document.getElementById("lightbox");
   const lbImg = document.getElementById("lbImg");
   const lbClose = document.getElementById("lbClose");
   const lbDownload = document.getElementById("lbDownload");
   const lbTitle = document.getElementById("lbTitle");
-
-  // ✅ 如果找不到弹窗元素，直接提示（你现在的问题大概率在这）
-  if (!lightbox || !lbImg || !lbClose || !lbDownload || !lbTitle) {
-    console.error("[Lightbox] Missing elements. Check that Lightbox HTML is added before </body> with correct IDs.");
-  }
 
   function setStatus(msg, type="") {
     elStatus.className = "status " + (type || "");
@@ -351,7 +361,6 @@
 
   function clearResults(){ elResults.innerHTML = ""; }
 
-  // ---------- Lightbox ----------
   let currentObjectUrlForDownload = "";
 
   function guessExtFromMime(mimeType="image/png") {
@@ -361,7 +370,6 @@
     return "png";
   }
 
-  // 把 dataURL 转 blob（用于更稳定的下载）
   function dataUrlToBlob(dataUrl) {
     const [meta, b64] = dataUrl.split(",");
     const mimeMatch = meta.match(/data:(.*?);base64/);
@@ -374,20 +382,14 @@
   }
 
   function openLightbox(src, filename = "image.png", mimeType = "image/png") {
-    if (!lightbox || !lbImg || !lbDownload || !lbTitle) return;
-
     lbImg.src = src;
     lbTitle.textContent = filename;
 
-    // 先清理旧的 objectURL
     if (currentObjectUrlForDownload) {
       URL.revokeObjectURL(currentObjectUrlForDownload);
       currentObjectUrlForDownload = "";
     }
 
-    // ✅ 更稳的下载处理：
-    // - data:base64 => 转 blob => objectURL 下载
-    // - http(s) => 直接 href
     if (src.startsWith("data:")) {
       const blob = dataUrlToBlob(src);
       const objUrl = URL.createObjectURL(blob);
@@ -402,7 +404,6 @@
   }
 
   function closeLightbox() {
-    if (!lightbox || !lbImg || !lbDownload) return;
     lightbox.setAttribute("aria-hidden", "true");
     lbImg.src = "";
     lbDownload.href = "";
@@ -413,19 +414,14 @@
     }
   }
 
-  lbClose?.addEventListener("click", closeLightbox);
-
-  // ✅ 点击遮罩关闭
-  lightbox?.addEventListener("click", (e) => {
+  lbClose.addEventListener("click", closeLightbox);
+  lightbox.addEventListener("click", (e) => {
     if (e.target && e.target.classList.contains("lb__backdrop")) closeLightbox();
   });
-
-  // ✅ ESC 关闭
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeLightbox();
   });
 
-  // ---------- Result rendering ----------
   function appendResult(src, idx = 0, mimeType = "image/png") {
     const img = document.createElement("img");
     img.src = src;
@@ -433,10 +429,7 @@
     img.style.cursor = "zoom-in";
     img.loading = "lazy";
 
-    const ext = guessExtFromMime(mimeType);
-    const filename = `gemini_${idx}.${ext}`;
-
-    // ✅ 关键：点击图片打开弹窗
+    const filename = `gemini_${idx}.${guessExtFromMime(mimeType)}`;
     img.addEventListener("click", () => openLightbox(src, filename, mimeType));
 
     elResults.appendChild(img);
@@ -494,13 +487,11 @@
       if (ct.includes("application/json")) {
         const data = await res.json();
 
-        // A) images = [url, url]
         if (Array.isArray(data.images) && typeof data.images[0] === "string") {
           data.images.forEach((u, i) => appendResult(u, i, "image/png"));
           return setStatus(`完成：收到 ${data.images.length} 张图片 URL。`, "ok");
         }
 
-        // B) images = [{ mimeType, dataBase64 }]
         if (Array.isArray(data.images) && data.images[0] && data.images[0].dataBase64) {
           data.images.forEach((obj, i) => {
             const mime = obj.mimeType || "image/png";
@@ -510,7 +501,6 @@
           return setStatus(`完成：收到 ${data.images.length} 张 base64 图片。`, "ok");
         }
 
-        console.log("Response JSON:", data);
         return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。", "err");
       }
 
@@ -521,8 +511,6 @@
         return setStatus("完成：收到 1 张图片二进制。", "ok");
       }
 
-      const text = await res.text();
-      console.log("Response text:", text);
       return setStatus("请求成功，但响应不是 JSON/图片。", "err");
     } catch(e){
       return setStatus(`请求异常：${e.message}`, "err");
@@ -533,27 +521,12 @@
 
   elSubmit.addEventListener("click", submit);
   setStatus("Ready.");
-</script>
+  </script>
 
-
-  
-  <!-- Lightbox 预览弹窗 -->
-<div id="lightbox" class="lb" aria-hidden="true">
-  <div class="lb__backdrop"></div>
-  <div class="lb__panel" role="dialog" aria-modal="true" aria-label="Image preview">
-    <div class="lb__top">
-      <div class="lb__title" id="lbTitle">预览</div>
-      <div class="lb__actions">
-        <a id="lbDownload" class="lb__btn" download>下载</a>
-        <button id="lbClose" class="lb__btn lb__btn--ghost">关闭</button>
-      </div>
-    </div>
-    <img id="lbImg" class="lb__img" alt="preview" />
-  </div>
-</div>
 
 </body>
 </html>
+
 
 
 
