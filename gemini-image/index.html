@@ -3,294 +3,273 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Xiucai AI - 生图提交</title>
+  <title>AI 生图工具</title>
   <style>
     :root{
-      --bg1:#0b1020;
-      --bg2:#0a0f1a;
-      --card:#0f172a;
-      --card2:#0b1224;
-      --text:#e6eaf2;
-      --muted:#a8b2c3;
-      --line: rgba(255,255,255,.10);
-      --accent:#7c3aed;
-      --accent2:#22c55e;
-      --danger:#ef4444;
-      --shadow: 0 18px 60px rgba(0,0,0,.35);
-      --radius:16px;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e5e7eb;
+      --shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+      --radius: 14px;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger: #dc2626;
+      --ok: #16a34a;
     }
     *{ box-sizing:border-box; }
     body{
       margin:0;
-      color:var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:
-        radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,.25), transparent 55%),
-        radial-gradient(1000px 650px at 85% 20%, rgba(34,197,94,.16), transparent 55%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
+      color: var(--text);
+      background: var(--bg);
     }
-    .wrap{ max-width: 1040px; margin: 0 auto; padding: 28px 16px 42px; }
-    .top{
-      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
-      margin-bottom: 16px;
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 42px 16px 60px;
     }
-    .brand{
-      display:flex; flex-direction:column; gap:6px;
+    .hero{
+      text-align:center;
+      margin-bottom: 18px;
     }
-    h1{ font-size: 22px; margin:0; letter-spacing:.2px; }
-    .sub{ color:var(--muted); font-size:13px; line-height:1.45; }
-    .pill{
-      font-size:12px; color: rgba(255,255,255,.85);
-      padding:8px 10px; border: 1px solid var(--line);
-      border-radius: 999px; background: rgba(255,255,255,.05);
-      height: fit-content;
+    .hero h1{
+      margin:0 0 10px;
+      font-size: 36px;
+      letter-spacing: .3px;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 14px;
-      align-items:start;
-    }
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      background: var(--card);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: 18px;
       box-shadow: var(--shadow);
-      overflow:hidden;
+      padding: 26px;
+      margin: 24px auto 0;
     }
-    .card .hd{
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      display:flex; justify-content:space-between; align-items:center;
-    }
-    .card .hd .title{ font-weight: 650; font-size: 14px; }
-    .card .hd .note{ color: var(--muted); font-size: 12px; }
-    .card .bd{ padding: 14px 16px 16px; }
 
-    label{ display:block; font-size:12px; color: rgba(255,255,255,.9); margin: 10px 0 6px; }
-    .hint{ color:var(--muted); font-size:12px; margin-top:6px; line-height:1.45; }
+    .section-title{
+      font-weight: 700;
+      font-size: 16px;
+      margin: 0 0 14px;
+    }
+
+    label{
+      display:block;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 14px 0 8px;
+    }
+    .subhint{
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+      line-height: 1.55;
+    }
 
     textarea, input, select{
-      width:100%;
-      background: rgba(10,16,32,.55);
-      border: 1px solid rgba(255,255,255,.14);
-      color: var(--text);
+      width: 100%;
+      padding: 12px 12px;
+      border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 11px 12px;
-      font-size: 13px;
+      font-size: 14px;
+      background: #fff;
       outline: none;
+      transition: box-shadow .12s ease, border-color .12s ease;
     }
-    textarea{ min-height: 120px; resize: vertical; }
+    textarea{ min-height: 110px; resize: vertical; }
     textarea:focus, input:focus, select:focus{
-      border-color: rgba(124,58,237,.75);
-      box-shadow: 0 0 0 4px rgba(124,58,237,.15);
+      border-color: rgba(79,70,229,.55);
+      box-shadow: 0 0 0 4px rgba(79,70,229,.12);
     }
-    input[type="file"]{ padding: 10px; }
-    .row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .row2{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+    .grid3{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+    @media (max-width: 860px){
+      .grid3{ grid-template-columns: 1fr; }
+      .hero h1{ font-size: 30px; }
+    }
 
     .actions{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      margin-top: 14px;
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      margin-top: 18px;
+      flex-wrap: wrap;
     }
-    button{
-      border:0; cursor:pointer;
-      padding: 11px 14px;
+    .btn{
+      border: 0;
       border-radius: 12px;
-      font-size: 13px;
-      font-weight: 650;
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform .06s ease, background .12s ease;
     }
-    .primary{
-      background: linear-gradient(135deg, rgba(124,58,237,1), rgba(99,102,241,1));
-      color:white;
-      box-shadow: 0 12px 30px rgba(124,58,237,.25);
+    .btn:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: var(--primary);
+      color: #fff;
     }
-    .ghost{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.14);
-      color: rgba(255,255,255,.9);
+    .btn-primary:hover{ background: var(--primary-hover); }
+    .btn-secondary{
+      background: #eef2ff;
+      color: #3730a3;
     }
-    .primary:disabled{ opacity:.55; cursor:not-allowed; }
+    .btn-secondary:hover{ background: #e0e7ff; }
+
     .status{
-      flex:1;
-      min-width: 220px;
-      font-size: 12px;
-      color: rgba(255,255,255,.85);
+      flex: 1;
+      min-width: 240px;
       padding: 10px 12px;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.18);
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
-    .status.ok{ border-color: rgba(34,197,94,.35); }
-    .status.err{ border-color: rgba(239,68,68,.45); color: rgba(255,210,210,.95); }
-    .status .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; }
+    .status.ok{ border-color: rgba(22,163,74,.25); color: #166534; background: rgba(22,163,74,.06); }
+    .status.err{ border-color: rgba(220,38,38,.25); color: #7f1d1d; background: rgba(220,38,38,.06); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; }
 
-    .previews{
+    .preview{
       display:grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
-    .thumb{
-      border-radius: 14px;
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.2);
-      position: relative;
+    .preview img{
+      width:100%;
       aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #f1f5f9;
     }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .thumb span{
-      position:absolute; left:8px; top:8px;
-      font-size:11px; padding:5px 8px; border-radius:999px;
-      background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.18);
-      color: rgba(255,255,255,.9);
+    @media (max-width: 860px){
+      .preview{ grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 520px){
+      .preview{ grid-template-columns: repeat(3, 1fr); }
     }
 
     .results{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
-    .result{
-      border-radius: 16px;
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
+    .results img{
+      width:100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #f1f5f9;
     }
-    .result img{ width:100%; height:auto; display:block; }
-    .tiny{ font-size: 12px; color: var(--muted); margin-top: 10px; line-height:1.45; }
-    code{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 2px 6px;
-      border-radius: 8px;
-      color: rgba(255,255,255,.92);
-      font-size: 12px;
+    @media (max-width: 860px){
+      .results{ grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-      .previews{ grid-template-columns: repeat(4, 1fr); }
-      .results{ grid-template-columns: repeat(2, 1fr); }
-      .row{ grid-template-columns: 1fr; }
-      .row2{ grid-template-columns: 1fr; }
+    .divider{
+      height:1px;
+      background: var(--line);
+      margin: 18px 0;
     }
-    @media (max-width: 520px){
-      .previews{ grid-template-columns: repeat(3, 1fr); }
-      .results{ grid-template-columns: 1fr; }
+
+    code{
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <h1>Xiucai AI · 生图提交</h1>
-        <div class="sub">
-          前端只负责把 <code>prompt</code> + 参考图等参数发给 n8n Webhook，并展示返回结果。<br/>
-          第一阶段调试请以 n8n Execution 为准（前端不当调试入口）。
-        </div>
-      </div>
-      <div class="pill">Stage 1 · 验证 prompt + 参考图是否生效</div>
+    <div class="hero">
+      <h1>AI 生图工具</h1>
+      <p>
+        支持文生图 / 图生图，用于电商设计、方案探索与视觉创作。上传参考图可增强一致性，不上传即为纯文本生成。<br/>
+        <span class="mono">Stage 1：</span>前端只提交与展示，调试以 n8n Execution 为准。
+      </p>
     </div>
 
-    <div class="grid">
-      <!-- Left: Form -->
-      <div class="card">
-        <div class="hd">
-          <div class="title">提交参数</div>
-          <div class="note">改 <code>WEBHOOK_URL</code> 即可使用</div>
+    <div class="card">
+      <div class="section-title">提示词</div>
+      <textarea id="prompt" placeholder="例如：现代极简风格的办公椅，白色背景，商业产品摄影，干净柔光"></textarea>
+
+      <div class="divider"></div>
+
+      <div class="section-title">参考图片（可选）</div>
+      <input id="refImages" type="file" accept="image/*" multiple />
+      <div class="subhint">最多上传 10 张。不上传即为文生图。</div>
+      <div id="preview" class="preview"></div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">生成设置</div>
+      <div class="grid3">
+        <div>
+          <label for="aspect">画面比例</label>
+          <select id="aspect">
+            <option value="1:1">1:1（方形）</option>
+            <option value="16:9">16:9（横版）</option>
+            <option value="9:16">9:16（竖版）</option>
+            <option value="4:3">4:3</option>
+            <option value="3:4">3:4</option>
+          </select>
         </div>
-        <div class="bd">
-          <label for="prompt">Prompt（必填）</label>
-          <textarea id="prompt" placeholder="例如：写实摄影，一只戴墨镜的橘猫，柔和光线，高细节..."></textarea>
 
-          <label for="refImages">参考图（可选，1–10 张）</label>
-          <input id="refImages" type="file" accept="image/*" multiple />
-          <div class="hint">超过 10 张会自动截断。建议先 1 张跑通再加。</div>
-          <div id="preview" class="previews"></div>
+        <div>
+          <label for="sizePreset">分辨率（Gemini 档位）</label>
+          <select id="sizePreset">
+            <option value="1K">1K</option>
+            <option value="2K" selected>2K</option>
+            <option value="4K">4K</option>
+          </select>
+          <div class="subhint">仅传档位给 n8n，由 n8n 映射到模型参数。</div>
+        </div>
 
-          <div class="row">
-            <div>
-              <label for="count">生图数量</label>
-              <input id="count" type="number" min="1" max="8" value="1" />
-              <div class="hint">建议先 1 张调试。</div>
-            </div>
-
-            <div>
-              <label for="sizePreset">尺寸档位（Gemini 仅支持）</label>
-              <select id="sizePreset">
-                <option value="1K">1K</option>
-                <option value="2K">2K</option>
-                <option value="4K">4K</option>
-              </select>
-              <div class="hint">前端只传档位，具体由 n8n 映射到模型参数。</div>
-            </div>
-
-            <div>
-              <label for="aspect">比例（Aspect Ratio）</label>
-              <select id="aspect">
-                <option value="1:1">1:1</option>
-                <option value="16:9">16:9</option>
-                <option value="9:16">9:16</option>
-                <option value="4:3">4:3</option>
-                <option value="3:4">3:4</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row2">
-            <div>
-              <label for="mode">模式</label>
-              <select id="mode">
-                <option value="txt2img">文生图（txt2img）</option>
-                <option value="img2img">图生图（img2img）</option>
-              </select>
-              <div class="hint">有参考图时通常选 img2img（但最终以 n8n 逻辑为准）。</div>
-            </div>
-            <div>
-              <label for="seed">Seed（可选）</label>
-              <input id="seed" type="text" placeholder="不填则由后端随机" />
-              <div class="hint">第一阶段可忽略；后续做可复现时再用。</div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="primary" id="submitBtn">提交到 n8n</button>
-            <button class="ghost" id="clearBtn" type="button">清空</button>
-            <div id="status" class="status"><span class="mono">Ready.</span></div>
-          </div>
+        <div>
+          <label for="count">生成数量</label>
+          <input id="count" type="number" min="1" max="8" value="1" />
         </div>
       </div>
 
-      <!-- Right: Result -->
-      <div class="card">
-        <div class="hd">
-          <div class="title">结果展示</div>
-          <div class="note">支持 URL / Base64</div>
-        </div>
-        <div class="bd">
-          <div class="tiny">
-            n8n 建议返回（任选一种）：<br/>
-            A) <code>{ "images": ["https://.../1.png", "https://.../2.png"] }</code><br/>
-            B) <code>{ "images": [{ "mimeType":"image/png", "dataBase64":"..." }] }</code>
-          </div>
-          <div id="results" class="results"></div>
-          <div class="tiny" style="margin-top:12px;">
-            Tip：如果网页跨域报错，说明 n8n Webhook 需要加 CORS 响应头（我们在工作流最后统一加）。
-          </div>
-        </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="submitBtn">开始生成</button>
+        <button class="btn btn-secondary" id="clearBtn" type="button">清空</button>
+        <div id="status" class="status"><span class="mono">Ready.</span></div>
+      </div>
+
+      <div class="subhint" style="margin-top:10px;">
+        n8n 建议返回：A) <code>{ "images": ["https://.../1.png"] }</code> 或 B) <code>{ "images": [{ "mimeType":"image/png", "dataBase64":"..." }] }</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">生成结果</div>
+      <div id="results" class="results"></div>
+      <div class="subhint" style="margin-top:10px;">
+        如果网页请求报跨域（CORS），说明 n8n Webhook 需要加响应头：<code>Access-Control-Allow-Origin: *</code>（我们后面在工作流里统一加）。
       </div>
     </div>
   </div>
 
   <script>
-    // ✅ 改这里：换成你的 n8n Webhook URL
+    // ✅ 改这里：换成你的 n8n Webhook URL（webhook-test 或 webhook 都行）
     const WEBHOOK_URL = "https://YOUR_DOMAIN_OR_IP/webhook/YOUR_WEBHOOK_PATH";
 
     const elPrompt = document.getElementById("prompt");
@@ -306,28 +285,29 @@
       elStatus.innerHTML = `<span class="mono">${msg || ""}</span>`;
     }
 
-    function clearResults() { elResults.innerHTML = ""; }
-
     function renderPreview(files) {
       elPreview.innerHTML = "";
-      [...files].slice(0, 10).forEach((file, idx) => {
-        const box = document.createElement("div");
-        box.className = "thumb";
+      [...files].slice(0,10).forEach(f => {
         const img = document.createElement("img");
-        img.alt = file.name;
-        img.src = URL.createObjectURL(file);
-        const tag = document.createElement("span");
-        tag.textContent = `#${idx+1}`;
-        box.appendChild(img);
-        box.appendChild(tag);
-        elPreview.appendChild(box);
+        img.alt = f.name;
+        img.src = URL.createObjectURL(f);
+        elPreview.appendChild(img);
       });
+    }
+
+    function clearResults(){ elResults.innerHTML = ""; }
+
+    function appendResult(src){
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "result";
+      elResults.appendChild(img);
     }
 
     elFiles.addEventListener("change", () => {
       const files = elFiles.files || [];
-      if (files.length > 10) setStatus("参考图超过 10 张，已截断为前 10 张。", "");
-      else setStatus("Ready.", "");
+      if (files.length > 10) setStatus("参考图超过 10 张，已截断为前 10 张。");
+      else setStatus("Ready.");
       renderPreview(files);
     });
 
@@ -336,96 +316,81 @@
       elFiles.value = "";
       elPreview.innerHTML = "";
       clearResults();
-      setStatus("已清空。", "");
+      setStatus("已清空。");
     });
 
-    function appendResultImage(src) {
-      const box = document.createElement("div");
-      box.className = "result";
-      const img = document.createElement("img");
-      img.src = src;
-      img.alt = "result";
-      box.appendChild(img);
-      elResults.appendChild(box);
-    }
-
-    async function submit() {
+    async function submit(){
       clearResults();
+
       const prompt = (elPrompt.value || "").trim();
-      if (!prompt) return setStatus("请先填写 prompt。", "err");
+      if (!prompt) return setStatus("请先填写提示词。", "err");
       if (!WEBHOOK_URL.startsWith("http")) return setStatus("请先配置 WEBHOOK_URL。", "err");
 
-      const count = Number(document.getElementById("count").value || 1);
       const aspect = document.getElementById("aspect").value;
       const sizePreset = document.getElementById("sizePreset").value; // 1K/2K/4K
-      const mode = document.getElementById("mode").value;
-      const seed = (document.getElementById("seed").value || "").trim();
+      const count = Number(document.getElementById("count").value || 1);
 
-      const files = [...(elFiles.files || [])].slice(0, 10);
+      const files = [...(elFiles.files || [])].slice(0,10);
 
       const form = new FormData();
       form.append("prompt", prompt);
-      form.append("count", String(count));
       form.append("aspect", aspect);
       form.append("sizePreset", sizePreset);
-      form.append("mode", mode);
-      if (seed) form.append("seed", seed);
+      form.append("count", String(count));
+      form.append("mode", files.length ? "img2img" : "txt2img");
       form.append("refImageCount", String(files.length));
-      files.forEach((f) => form.append("refImages", f, f.name));
+      files.forEach(f => form.append("refImages", f, f.name));
 
-      try {
+      try{
         elSubmit.disabled = true;
-        setStatus("提交中…", "");
+        setStatus("提交中…");
 
-        const res = await fetch(WEBHOOK_URL, { method: "POST", body: form });
-        const contentType = res.headers.get("content-type") || "";
+        const res = await fetch(WEBHOOK_URL, { method:"POST", body: form });
+        const ct = res.headers.get("content-type") || "";
 
-        if (!res.ok) {
-          const text = await res.text();
-          return setStatus(`请求失败：HTTP ${res.status} ${text.slice(0, 220)}`, "err");
+        if(!res.ok){
+          const t = await res.text();
+          return setStatus(`请求失败：HTTP ${res.status} ${t.slice(0,220)}`, "err");
         }
 
-        if (contentType.includes("application/json")) {
+        if (ct.includes("application/json")) {
           const data = await res.json();
 
-          // A) URL 数组
           if (Array.isArray(data.images) && typeof data.images[0] === "string") {
-            data.images.forEach(u => appendResultImage(u));
+            data.images.forEach(u => appendResult(u));
             return setStatus(`完成：收到 ${data.images.length} 张图片 URL。`, "ok");
           }
 
-          // B) base64 对象数组
           if (Array.isArray(data.images) && data.images[0] && data.images[0].dataBase64) {
             data.images.forEach(obj => {
               const mime = obj.mimeType || "image/png";
-              appendResultImage(`data:${mime};base64,${obj.dataBase64}`);
+              appendResult(`data:${mime};base64,${obj.dataBase64}`);
             });
             return setStatus(`完成：收到 ${data.images.length} 张 base64 图片。`, "ok");
           }
 
           console.log("Response JSON:", data);
-          return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。请检查 n8n 最终响应结构。", "err");
+          return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。", "err");
         }
 
-        if (contentType.startsWith("image/")) {
+        if (ct.startsWith("image/")) {
           const blob = await res.blob();
-          appendResultImage(URL.createObjectURL(blob));
+          appendResult(URL.createObjectURL(blob));
           return setStatus("完成：收到 1 张图片二进制。", "ok");
         }
 
         const text = await res.text();
         console.log("Response text:", text);
-        return setStatus("请求成功，但响应不是 JSON/图片。请检查 n8n Webhook Response。", "err");
-
-      } catch (e) {
+        return setStatus("请求成功，但响应不是 JSON/图片。", "err");
+      } catch(e){
         return setStatus(`请求异常：${e.message}`, "err");
-      } finally {
+      } finally{
         elSubmit.disabled = false;
       }
     }
 
     elSubmit.addEventListener("click", submit);
-    setStatus("Ready.", "");
+    setStatus("Ready.");
   </script>
 </body>
 </html>
