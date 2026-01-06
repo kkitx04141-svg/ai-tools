@@ -310,8 +310,8 @@
     </div>
   </div>
 
-<script>
-  // ✅ 改这里：换成你的 n8n Webhook URL（webhook-test 或 webhook 都行）
+
+  <script>
   const WEBHOOK_URL = "https://xiucai-ai.xyz/webhook-test/gemini-image";
 
   const elPrompt = document.getElementById("prompt");
@@ -328,6 +328,11 @@
   const lbClose = document.getElementById("lbClose");
   const lbDownload = document.getElementById("lbDownload");
   const lbTitle = document.getElementById("lbTitle");
+
+  // ✅ 如果找不到弹窗元素，直接提示（你现在的问题大概率在这）
+  if (!lightbox || !lbImg || !lbClose || !lbDownload || !lbTitle) {
+    console.error("[Lightbox] Missing elements. Check that Lightbox HTML is added before </body> with correct IDs.");
+  }
 
   function setStatus(msg, type="") {
     elStatus.className = "status " + (type || "");
@@ -346,15 +351,51 @@
 
   function clearResults(){ elResults.innerHTML = ""; }
 
-  // ---------- Lightbox helpers ----------
-  function openLightbox(src, filename = "image.png") {
+  // ---------- Lightbox ----------
+  let currentObjectUrlForDownload = "";
+
+  function guessExtFromMime(mimeType="image/png") {
+    if (mimeType === "image/jpeg") return "jpg";
+    if (mimeType === "image/png") return "png";
+    if (mimeType === "image/webp") return "webp";
+    return "png";
+  }
+
+  // 把 dataURL 转 blob（用于更稳定的下载）
+  function dataUrlToBlob(dataUrl) {
+    const [meta, b64] = dataUrl.split(",");
+    const mimeMatch = meta.match(/data:(.*?);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+    const binStr = atob(b64);
+    const len = binStr.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+
+  function openLightbox(src, filename = "image.png", mimeType = "image/png") {
     if (!lightbox || !lbImg || !lbDownload || !lbTitle) return;
 
     lbImg.src = src;
     lbTitle.textContent = filename;
 
-    // 直接下载当前 src（data: 或 http(s) url 都可）
-    lbDownload.href = src;
+    // 先清理旧的 objectURL
+    if (currentObjectUrlForDownload) {
+      URL.revokeObjectURL(currentObjectUrlForDownload);
+      currentObjectUrlForDownload = "";
+    }
+
+    // ✅ 更稳的下载处理：
+    // - data:base64 => 转 blob => objectURL 下载
+    // - http(s) => 直接 href
+    if (src.startsWith("data:")) {
+      const blob = dataUrlToBlob(src);
+      const objUrl = URL.createObjectURL(blob);
+      currentObjectUrlForDownload = objUrl;
+      lbDownload.href = objUrl;
+    } else {
+      lbDownload.href = src;
+    }
     lbDownload.setAttribute("download", filename);
 
     lightbox.setAttribute("aria-hidden", "false");
@@ -365,25 +406,26 @@
     lightbox.setAttribute("aria-hidden", "true");
     lbImg.src = "";
     lbDownload.href = "";
+
+    if (currentObjectUrlForDownload) {
+      URL.revokeObjectURL(currentObjectUrlForDownload);
+      currentObjectUrlForDownload = "";
+    }
   }
 
   lbClose?.addEventListener("click", closeLightbox);
+
+  // ✅ 点击遮罩关闭
   lightbox?.addEventListener("click", (e) => {
-    // 点击背景关闭（点图片不关）
     if (e.target && e.target.classList.contains("lb__backdrop")) closeLightbox();
   });
+
+  // ✅ ESC 关闭
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeLightbox();
   });
 
-  // ---------- Result rendering (click to zoom + download) ----------
-  function guessExtFromMime(mimeType="image/png") {
-    if (mimeType === "image/jpeg") return "jpg";
-    if (mimeType === "image/png") return "png";
-    if (mimeType === "image/webp") return "webp";
-    return "png";
-  }
-
+  // ---------- Result rendering ----------
   function appendResult(src, idx = 0, mimeType = "image/png") {
     const img = document.createElement("img");
     img.src = src;
@@ -394,7 +436,9 @@
     const ext = guessExtFromMime(mimeType);
     const filename = `gemini_${idx}.${ext}`;
 
-    img.addEventListener("click", () => openLightbox(src, filename));
+    // ✅ 关键：点击图片打开弹窗
+    img.addEventListener("click", () => openLightbox(src, filename, mimeType));
+
     elResults.appendChild(img);
   }
 
@@ -421,7 +465,7 @@
     if (!WEBHOOK_URL.startsWith("http")) return setStatus("请先配置 WEBHOOK_URL。", "err");
 
     const aspect = document.getElementById("aspect").value;
-    const sizePreset = document.getElementById("sizePreset").value; // 1K/2K/4K
+    const sizePreset = document.getElementById("sizePreset").value;
     const count = Number(document.getElementById("count").value || 1);
 
     const files = [...(elFiles.files || [])].slice(0,10);
@@ -447,7 +491,6 @@
         return setStatus(`请求失败：HTTP ${res.status} ${t.slice(0,220)}`, "err");
       }
 
-      // JSON 返回
       if (ct.includes("application/json")) {
         const data = await res.json();
 
@@ -471,7 +514,6 @@
         return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。", "err");
       }
 
-      // 二进制图片返回（不常用，但也兼容）
       if (ct.startsWith("image/")) {
         const blob = await res.blob();
         const src = URL.createObjectURL(blob);
@@ -493,6 +535,7 @@
   setStatus("Ready.");
 </script>
 
+
   
   <!-- Lightbox 预览弹窗 -->
 <div id="lightbox" class="lb" aria-hidden="true">
@@ -511,5 +554,6 @@
 
 </body>
 </html>
+
 
 
