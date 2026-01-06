@@ -194,6 +194,48 @@
       border: 1px solid var(--line);
       font-size: 12px;
     }
+
+    /* Lightbox */
+.lb{ position:fixed; inset:0; display:none; z-index:9999; }
+.lb[aria-hidden="false"]{ display:block; }
+.lb__backdrop{ position:absolute; inset:0; background: rgba(15,23,42,.55); backdrop-filter: blur(6px); }
+.lb__panel{
+  position:relative;
+  max-width: min(1100px, calc(100vw - 28px));
+  max-height: calc(100vh - 28px);
+  margin: 14px auto;
+  background:#fff;
+  border-radius: 16px;
+  overflow:hidden;
+  box-shadow: 0 24px 80px rgba(15,23,42,.25);
+  border: 1px solid rgba(15,23,42,.08);
+}
+.lb__top{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+}
+.lb__title{ font-weight:700; font-size: 13px; color:#0f172a; }
+.lb__actions{ display:flex; gap:10px; align-items:center; }
+.lb__btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 34px; padding: 0 12px;
+  border-radius: 10px; border: 1px solid rgba(15,23,42,.10);
+  background:#4f46e5; color:#fff; text-decoration:none;
+  font-weight:700; font-size:13px; cursor:pointer;
+}
+.lb__btn--ghost{ background:#fff; color:#0f172a; }
+.lb__img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height: calc(100vh - 70px);
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+
+    
   </style>
 </head>
 <body>
@@ -268,130 +310,206 @@
     </div>
   </div>
 
-  <script>
-    // ✅ 改这里：换成你的 n8n Webhook URL（webhook-test 或 webhook 都行）
-    const WEBHOOK_URL = "https://xiucai-ai.xyz/webhook-test/gemini-image";
+<script>
+  // ✅ 改这里：换成你的 n8n Webhook URL（webhook-test 或 webhook 都行）
+  const WEBHOOK_URL = "https://xiucai-ai.xyz/webhook-test/gemini-image";
 
-    const elPrompt = document.getElementById("prompt");
-    const elFiles = document.getElementById("refImages");
-    const elPreview = document.getElementById("preview");
-    const elResults = document.getElementById("results");
-    const elStatus = document.getElementById("status");
-    const elSubmit = document.getElementById("submitBtn");
-    const elClear = document.getElementById("clearBtn");
+  const elPrompt = document.getElementById("prompt");
+  const elFiles = document.getElementById("refImages");
+  const elPreview = document.getElementById("preview");
+  const elResults = document.getElementById("results");
+  const elStatus = document.getElementById("status");
+  const elSubmit = document.getElementById("submitBtn");
+  const elClear = document.getElementById("clearBtn");
 
-    function setStatus(msg, type="") {
-      elStatus.className = "status " + (type || "");
-      elStatus.innerHTML = `<span class="mono">${msg || ""}</span>`;
-    }
+  // Lightbox elements
+  const lightbox = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lbImg");
+  const lbClose = document.getElementById("lbClose");
+  const lbDownload = document.getElementById("lbDownload");
+  const lbTitle = document.getElementById("lbTitle");
 
-    function renderPreview(files) {
-      elPreview.innerHTML = "";
-      [...files].slice(0,10).forEach(f => {
-        const img = document.createElement("img");
-        img.alt = f.name;
-        img.src = URL.createObjectURL(f);
-        elPreview.appendChild(img);
-      });
-    }
+  function setStatus(msg, type="") {
+    elStatus.className = "status " + (type || "");
+    elStatus.innerHTML = `<span class="mono">${msg || ""}</span>`;
+  }
 
-    function clearResults(){ elResults.innerHTML = ""; }
-
-    function appendResult(src){
+  function renderPreview(files) {
+    elPreview.innerHTML = "";
+    [...files].slice(0,10).forEach(f => {
       const img = document.createElement("img");
-      img.src = src;
-      img.alt = "result";
-      elResults.appendChild(img);
-    }
-
-    elFiles.addEventListener("change", () => {
-      const files = elFiles.files || [];
-      if (files.length > 10) setStatus("参考图超过 10 张，已截断为前 10 张。");
-      else setStatus("Ready.");
-      renderPreview(files);
+      img.alt = f.name;
+      img.src = URL.createObjectURL(f);
+      elPreview.appendChild(img);
     });
+  }
 
-    elClear.addEventListener("click", () => {
-      elPrompt.value = "";
-      elFiles.value = "";
-      elPreview.innerHTML = "";
-      clearResults();
-      setStatus("已清空。");
-    });
+  function clearResults(){ elResults.innerHTML = ""; }
 
-    async function submit(){
-      clearResults();
+  // ---------- Lightbox helpers ----------
+  function openLightbox(src, filename = "image.png") {
+    if (!lightbox || !lbImg || !lbDownload || !lbTitle) return;
 
-      const prompt = (elPrompt.value || "").trim();
-      if (!prompt) return setStatus("请先填写提示词。", "err");
-      if (!WEBHOOK_URL.startsWith("http")) return setStatus("请先配置 WEBHOOK_URL。", "err");
+    lbImg.src = src;
+    lbTitle.textContent = filename;
 
-      const aspect = document.getElementById("aspect").value;
-      const sizePreset = document.getElementById("sizePreset").value; // 1K/2K/4K
-      const count = Number(document.getElementById("count").value || 1);
+    // 直接下载当前 src（data: 或 http(s) url 都可）
+    lbDownload.href = src;
+    lbDownload.setAttribute("download", filename);
 
-      const files = [...(elFiles.files || [])].slice(0,10);
+    lightbox.setAttribute("aria-hidden", "false");
+  }
 
-      const form = new FormData();
-      form.append("prompt", prompt);
-      form.append("aspect", aspect);
-      form.append("sizePreset", sizePreset);
-      form.append("count", String(count));
-      form.append("mode", files.length ? "img2img" : "txt2img");
-      form.append("refImageCount", String(files.length));
-      files.forEach(f => form.append("refImages", f, f.name));
+  function closeLightbox() {
+    if (!lightbox || !lbImg || !lbDownload) return;
+    lightbox.setAttribute("aria-hidden", "true");
+    lbImg.src = "";
+    lbDownload.href = "";
+  }
 
-      try{
-        elSubmit.disabled = true;
-        setStatus("提交中…");
+  lbClose?.addEventListener("click", closeLightbox);
+  lightbox?.addEventListener("click", (e) => {
+    // 点击背景关闭（点图片不关）
+    if (e.target && e.target.classList.contains("lb__backdrop")) closeLightbox();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLightbox();
+  });
 
-        const res = await fetch(WEBHOOK_URL, { method:"POST", body: form });
-        const ct = res.headers.get("content-type") || "";
+  // ---------- Result rendering (click to zoom + download) ----------
+  function guessExtFromMime(mimeType="image/png") {
+    if (mimeType === "image/jpeg") return "jpg";
+    if (mimeType === "image/png") return "png";
+    if (mimeType === "image/webp") return "webp";
+    return "png";
+  }
 
-        if(!res.ok){
-          const t = await res.text();
-          return setStatus(`请求失败：HTTP ${res.status} ${t.slice(0,220)}`, "err");
-        }
+  function appendResult(src, idx = 0, mimeType = "image/png") {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "result";
+    img.style.cursor = "zoom-in";
+    img.loading = "lazy";
 
-        if (ct.includes("application/json")) {
-          const data = await res.json();
+    const ext = guessExtFromMime(mimeType);
+    const filename = `gemini_${idx}.${ext}`;
 
-          if (Array.isArray(data.images) && typeof data.images[0] === "string") {
-            data.images.forEach(u => appendResult(u));
-            return setStatus(`完成：收到 ${data.images.length} 张图片 URL。`, "ok");
-          }
+    img.addEventListener("click", () => openLightbox(src, filename));
+    elResults.appendChild(img);
+  }
 
-          if (Array.isArray(data.images) && data.images[0] && data.images[0].dataBase64) {
-            data.images.forEach(obj => {
-              const mime = obj.mimeType || "image/png";
-              appendResult(`data:${mime};base64,${obj.dataBase64}`);
-            });
-            return setStatus(`完成：收到 ${data.images.length} 张 base64 图片。`, "ok");
-          }
+  elFiles.addEventListener("change", () => {
+    const files = elFiles.files || [];
+    if (files.length > 10) setStatus("参考图超过 10 张，已截断为前 10 张。");
+    else setStatus("Ready.");
+    renderPreview(files);
+  });
 
-          console.log("Response JSON:", data);
-          return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。", "err");
-        }
+  elClear.addEventListener("click", () => {
+    elPrompt.value = "";
+    elFiles.value = "";
+    elPreview.innerHTML = "";
+    clearResults();
+    setStatus("已清空。");
+  });
 
-        if (ct.startsWith("image/")) {
-          const blob = await res.blob();
-          appendResult(URL.createObjectURL(blob));
-          return setStatus("完成：收到 1 张图片二进制。", "ok");
-        }
+  async function submit(){
+    clearResults();
 
-        const text = await res.text();
-        console.log("Response text:", text);
-        return setStatus("请求成功，但响应不是 JSON/图片。", "err");
-      } catch(e){
-        return setStatus(`请求异常：${e.message}`, "err");
-      } finally{
-        elSubmit.disabled = false;
+    const prompt = (elPrompt.value || "").trim();
+    if (!prompt) return setStatus("请先填写提示词。", "err");
+    if (!WEBHOOK_URL.startsWith("http")) return setStatus("请先配置 WEBHOOK_URL。", "err");
+
+    const aspect = document.getElementById("aspect").value;
+    const sizePreset = document.getElementById("sizePreset").value; // 1K/2K/4K
+    const count = Number(document.getElementById("count").value || 1);
+
+    const files = [...(elFiles.files || [])].slice(0,10);
+
+    const form = new FormData();
+    form.append("prompt", prompt);
+    form.append("aspect", aspect);
+    form.append("sizePreset", sizePreset);
+    form.append("count", String(count));
+    form.append("mode", files.length ? "img2img" : "txt2img");
+    form.append("refImageCount", String(files.length));
+    files.forEach(f => form.append("refImages", f, f.name));
+
+    try{
+      elSubmit.disabled = true;
+      setStatus("提交中…");
+
+      const res = await fetch(WEBHOOK_URL, { method:"POST", body: form });
+      const ct = res.headers.get("content-type") || "";
+
+      if(!res.ok){
+        const t = await res.text();
+        return setStatus(`请求失败：HTTP ${res.status} ${t.slice(0,220)}`, "err");
       }
-    }
 
-    elSubmit.addEventListener("click", submit);
-    setStatus("Ready.");
-  </script>
+      // JSON 返回
+      if (ct.includes("application/json")) {
+        const data = await res.json();
+
+        // A) images = [url, url]
+        if (Array.isArray(data.images) && typeof data.images[0] === "string") {
+          data.images.forEach((u, i) => appendResult(u, i, "image/png"));
+          return setStatus(`完成：收到 ${data.images.length} 张图片 URL。`, "ok");
+        }
+
+        // B) images = [{ mimeType, dataBase64 }]
+        if (Array.isArray(data.images) && data.images[0] && data.images[0].dataBase64) {
+          data.images.forEach((obj, i) => {
+            const mime = obj.mimeType || "image/png";
+            const src = `data:${mime};base64,${obj.dataBase64}`;
+            appendResult(src, i, mime);
+          });
+          return setStatus(`完成：收到 ${data.images.length} 张 base64 图片。`, "ok");
+        }
+
+        console.log("Response JSON:", data);
+        return setStatus("请求成功，但返回 JSON 没有可识别的 images 字段。", "err");
+      }
+
+      // 二进制图片返回（不常用，但也兼容）
+      if (ct.startsWith("image/")) {
+        const blob = await res.blob();
+        const src = URL.createObjectURL(blob);
+        appendResult(src, 0, ct);
+        return setStatus("完成：收到 1 张图片二进制。", "ok");
+      }
+
+      const text = await res.text();
+      console.log("Response text:", text);
+      return setStatus("请求成功，但响应不是 JSON/图片。", "err");
+    } catch(e){
+      return setStatus(`请求异常：${e.message}`, "err");
+    } finally{
+      elSubmit.disabled = false;
+    }
+  }
+
+  elSubmit.addEventListener("click", submit);
+  setStatus("Ready.");
+</script>
+
+  
+  <!-- Lightbox 预览弹窗 -->
+<div id="lightbox" class="lb" aria-hidden="true">
+  <div class="lb__backdrop"></div>
+  <div class="lb__panel" role="dialog" aria-modal="true" aria-label="Image preview">
+    <div class="lb__top">
+      <div class="lb__title" id="lbTitle">预览</div>
+      <div class="lb__actions">
+        <a id="lbDownload" class="lb__btn" download>下载</a>
+        <button id="lbClose" class="lb__btn lb__btn--ghost">关闭</button>
+      </div>
+    </div>
+    <img id="lbImg" class="lb__img" alt="preview" />
+  </div>
+</div>
+
 </body>
 </html>
+
 
