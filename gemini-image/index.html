@@ -277,20 +277,45 @@
         box.style.display = "block";
         box.innerHTML = `<div class="ok">生成成功 ✅</div>`;
         
-        if (payload && payload.images && payload.images.length) {
-          payload.images.forEach(img => {
-            const imageEl = document.createElement("img");
-            imageEl.src = img.dataUrl;
-            imageEl.style.width = "100%";
-            imageEl.style.marginTop = "16px";
-            imageEl.style.borderRadius = "12px";
-            box.appendChild(imageEl);
-          });
-        } else {
-          const pre = document.createElement("pre");
-          pre.textContent = JSON.stringify(payload, null, 2);
-          box.appendChild(pre);
+        // ===== 显示生成的图片（适配你当前 n8n 返回结构）=====
+        const box = document.getElementById("resultBox");
+        const title = document.getElementById("resultTitle");
+        const pre = document.getElementById("resultPre");
+        
+        box.style.display = "block";
+        title.className = "ok";
+        title.textContent = "生成成功 ✅";
+        
+        // 清空之前内容
+        pre.innerHTML = "";
+        
+        // ✅ 情况 1：n8n 返回单张图片（你现在就是这个）
+        if (payload && payload.dataUrl) {
+          const img = document.createElement("img");
+          img.src = payload.dataUrl;
+          img.style.maxWidth = "100%";
+          img.style.marginTop = "16px";
+          img.style.borderRadius = "12px";
+          pre.appendChild(img);
         }
+        
+        // ✅ 情况 2：以后如果你改成多图（images 数组）
+        else if (payload && Array.isArray(payload.images)) {
+          payload.images.forEach(item => {
+            const img = document.createElement("img");
+            img.src = item.dataUrl;
+            img.style.maxWidth = "100%";
+            img.style.marginTop = "16px";
+            img.style.borderRadius = "12px";
+            pre.appendChild(img);
+          });
+        }
+        
+        // ❌ 兜底：不是图片就原样展示
+        else {
+          pre.textContent = JSON.stringify(payload, null, 2);
+        }
+
 
       } catch (err) {
         showResult(false, "提交失败 ❌", err?.message || String(err));
@@ -301,5 +326,6 @@
   </script>
 </body>
 </html>
+
 
 
