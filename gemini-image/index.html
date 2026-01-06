@@ -241,6 +241,7 @@
     }
 
     async function handleSubmit(e, form) {
+      console.log("🔥 handleSubmit called");
       e.preventDefault(); // ✅ 阻止浏览器跳转到 webhook（这是你之前乱/405的根源之一）
 
       setLoading(true);
@@ -326,6 +327,7 @@
   </script>
 </body>
 </html>
+
 
 
 
