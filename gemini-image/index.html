@@ -1,246 +1,280 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 生图工具 · Gemini</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 生图工具 · Gemini</title>
 
-<style>
-:root {
-  --bg: #f6f7fb;
-  --card: #ffffff;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --border: #e5e7eb;
-  --text: #111827;
-  --muted: #6b7280;
-  --radius: 14px;
-}
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --radius: 14px;
+    }
 
-* {
-  box-sizing: border-box;
-}
+    * { box-sizing: border-box; }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  color: var(--text);
-}
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+    }
 
-.container {
-  max-width: 880px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
+    .container {
+      max-width: 880px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
 
-.header {
-  margin-bottom: 28px;
-}
+    .header { margin-bottom: 28px; }
+    .header h1 { font-size: 28px; margin: 0; }
+    .header p {
+      margin-top: 8px;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.6;
+    }
 
-.header h1 {
-  font-size: 28px;
-  margin: 0;
-}
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+      padding: 28px;
+    }
 
-.header p {
-  margin-top: 8px;
-  color: var(--muted);
-  max-width: 640px;
-}
+    .section { margin-bottom: 28px; }
+    .section-title { font-weight: 600; margin-bottom: 10px; }
 
-.card {
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-  padding: 28px;
-}
+    .field { margin-top: 14px; }
+    label { display: block; font-size: 14px; margin-bottom: 6px; }
 
-.section {
-  margin-bottom: 28px;
-}
+    textarea, input[type="number"], select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background: #fff;
+    }
 
-.section-title {
-  font-weight: 600;
-  margin-bottom: 10px;
-}
+    textarea { resize: vertical; min-height: 96px; }
+    input[type="file"] { font-size: 14px; }
 
-.field {
-  margin-top: 14px;
-}
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
 
-label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
 
-textarea,
-input[type="number"],
-select {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  font-size: 14px;
-}
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
 
-textarea {
-  resize: vertical;
-  min-height: 96px;
-}
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
 
-input[type="file"] {
-  font-size: 14px;
-}
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-.hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 6px;
-}
+    button:hover { background: var(--primary-hover); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
+    .loading { font-size: 14px; color: var(--muted); }
 
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 28px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-button:hover {
-  background: var(--primary-hover);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.loading {
-  font-size: 14px;
-  color: var(--muted);
-}
-</style>
+    /* 结果展示 */
+    .result {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #fff;
+      display: none;
+    }
+    .result .ok { color: #16a34a; font-weight: 600; }
+    .result .err { color: #dc2626; font-weight: 600; }
+    .result pre {
+      margin: 10px 0 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      color: #111827;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <div class="header">
+      <h1>AI 生图工具</h1>
+      <p>
+        支持文生图 / 图生图，用于电商设计、方案探索与视觉创作。
+        上传参考图可增强一致性，不上传即为纯文本生成。
+      </p>
+    </div>
 
-<div class="container">
-  <div class="header">
-    <h1>AI 生图工具</h1>
-    <p>
-      支持文生图 / 图生图，用于电商设计、方案探索与视觉创作。
-      上传参考图可增强一致性，不上传即为纯文本生成。
-    </p>
+    <form
+      class="card"
+      enctype="multipart/form-data"
+      onsubmit="handleSubmit(event, this)"
+    >
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-title">提示词</div>
+        <textarea
+          name="prompt"
+          placeholder="例如：现代极简风格的办公椅，白色背景，商业产品摄影，干净柔光"
+          required
+        ></textarea>
+      </div>
+
+      <!-- Reference Images -->
+      <div class="section">
+        <div class="section-title">参考图片（可选）</div>
+        <input type="file" name="images" accept="image/*" multiple />
+        <div class="hint">最多上传 10 张。不上传即为文生图。</div>
+      </div>
+
+      <!-- Settings -->
+      <div class="section">
+        <div class="section-title">生成设置</div>
+        <div class="grid">
+          <div class="field">
+            <label>画面比例</label>
+            <select name="aspectRatio">
+              <option value="1:1">1:1（方形）</option>
+              <option value="3:4">3:4（竖图）</option>
+              <option value="4:5">4:5（竖图）</option>
+              <option value="9:16">9:16（竖图）</option>
+              <option value="4:3">4:3（横图）</option>
+              <option value="5:4">5:4（横图）</option>
+              <option value="16:9">16:9（宽屏）</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>分辨率</label>
+            <select name="imageSize">
+              <option value="1K">1K</option>
+              <option value="2K" selected>2K</option>
+              <option value="4K">4K</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>生成数量</label>
+            <input type="number" name="count" value="2" min="1" max="6" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="loading" id="loadingText" style="display:none;">
+          正在提交并生成图片，请稍候…
+        </div>
+        <button type="submit" id="submitBtn">开始生成</button>
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="resultBox">
+        <div id="resultTitle"></div>
+        <pre id="resultPre"></pre>
+      </div>
+    </form>
   </div>
 
-  <form
-    class="card"
-    action="https://xiucai-ai.xyz/webhook-test/gemini-image"
-    method="POST"
-    enctype="multipart/form-data"
-    onsubmit="handleSubmit(this)"
-  >
+  <script>
+    /**
+     * ✅ 只需要改这一行：换成你的 Webhook Test URL 或 Production URL
+     * 例：
+     * Test: https://xiucai-ai.xyz/webhook-test/gemini-image
+     * Prod: https://xiucai-ai.xyz/webhook/gemini-image
+     */
+    const WEBHOOK_URL = "https://xiucai-ai.xyz/webhook-test/gemini-image";
 
-    <!-- Prompt -->
-    <div class="section">
-      <div class="section-title">提示词</div>
-      <textarea
-        name="prompt"
-        placeholder="例如：现代极简风格的办公椅，白色背景，商业产品摄影，干净柔光"
-        required
-      ></textarea>
-    </div>
+    function setLoading(isLoading) {
+      const btn = document.getElementById("submitBtn");
+      const loading = document.getElementById("loadingText");
+      btn.disabled = isLoading;
+      loading.style.display = isLoading ? "block" : "none";
+    }
 
-    <!-- Reference Images -->
-    <div class="section">
-      <div class="section-title">参考图片（可选）</div>
-      <input type="file" name="images" accept="image/*" multiple />
-      <div class="hint">
-        最多上传 10 张。不上传即为文生图。
-      </div>
-    </div>
+    function showResult(ok, title, data) {
+      const box = document.getElementById("resultBox");
+      const t = document.getElementById("resultTitle");
+      const pre = document.getElementById("resultPre");
 
-    <!-- Settings -->
-    <div class="section">
-      <div class="section-title">生成设置</div>
-      <div class="grid">
-        <div class="field">
-          <label>画面比例</label>
-          <select name="aspectRatio">
-            <option value="1:1">1:1（方形）</option>
-            <option value="3:4">3:4（竖图）</option>
-            <option value="4:5">4:5（竖图）</option>
-			<option value="9:16">9:16（竖图）</option>
-            <option value="4:3">4:3（竖图）</option>
-            <option value="5:4">5:4（横图）</option>
-            <option value="16:9">16:9（宽屏）</option>
-          </select>
-        </div>
+      box.style.display = "block";
+      t.className = ok ? "ok" : "err";
+      t.textContent = title;
+      pre.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    }
 
-        <div class="field">
-          <label>分辨率</label>
-          <select name="imageSize">
-            <option value="1K">1K</option>
-            <option value="2K" selected>2K</option>
-            <option value="4K">4K</option>
-          </select>
-        </div>
+    async function handleSubmit(e, form) {
+      e.preventDefault(); // ✅ 阻止浏览器跳转到 webhook（这是你之前乱/405的根源之一）
 
-        <div class="field">
-          <label>生成数量</label>
-          <input type="number" name="count" value="2" min="1" max="6" />
-        </div>
-      </div>
-    </div>
+      setLoading(true);
 
-    <!-- Footer -->
-    <div class="footer">
-      <div class="loading" id="loadingText" style="display:none;">
-        正在生成图片，请稍候…
-      </div>
-      <button type="submit" id="submitBtn">
-        开始生成
-      </button>
-    </div>
+      try {
+        // ✅ multipart/form-data（包含图片 + 字段）
+        const fd = new FormData(form);
 
-  </form>
-</div>
+        // ✅ 保险：限制最多 10 张（前端先拦一层）
+        const files = form.querySelector('input[name="images"]').files;
+        if (files && files.length > 10) {
+          throw new Error("最多只能上传 10 张图片。请减少后再提交。");
+        }
 
-<script>
-function handleSubmit(form) {
-  const btn = document.getElementById("submitBtn");
-  const loading = document.getElementById("loadingText");
-  btn.disabled = true;
-  loading.style.display = "block";
-}
-</script>
+        // ✅ 发给 n8n webhook
+        const res = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          body: fd,
+        });
 
+        // n8n 的返回可能是 JSON，也可能是纯文本（取决于你 Respond to Webhook 怎么配）
+        const contentType = res.headers.get("content-type") || "";
+        const payload = contentType.includes("application/json")
+          ? await res.json()
+          : await res.text();
+
+        if (!res.ok) {
+          showResult(false, `提交失败（HTTP ${res.status}）`, payload);
+          return;
+        }
+
+        showResult(true, "提交成功 ✅（已触发 n8n 工作流）", payload);
+      } catch (err) {
+        showResult(false, "提交失败 ❌", err?.message || String(err));
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
 </body>
 </html>
-
