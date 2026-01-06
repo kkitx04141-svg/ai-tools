@@ -272,7 +272,26 @@
           return;
         }
 
-        showResult(true, "提交成功 ✅（已触发 n8n 工作流）", payload);
+        // ===== 显示生成的图片 =====
+        const box = document.getElementById("resultBox");
+        box.style.display = "block";
+        box.innerHTML = `<div class="ok">生成成功 ✅</div>`;
+        
+        if (payload && payload.images && payload.images.length) {
+          payload.images.forEach(img => {
+            const imageEl = document.createElement("img");
+            imageEl.src = img.dataUrl;
+            imageEl.style.width = "100%";
+            imageEl.style.marginTop = "16px";
+            imageEl.style.borderRadius = "12px";
+            box.appendChild(imageEl);
+          });
+        } else {
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(payload, null, 2);
+          box.appendChild(pre);
+        }
+
       } catch (err) {
         showResult(false, "提交失败 ❌", err?.message || String(err));
       } finally {
@@ -282,4 +301,5 @@
   </script>
 </body>
 </html>
+
 
