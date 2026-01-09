@@ -38,6 +38,7 @@
 </style>
 </head>
 <body>
+  <!-- 调用官方的Gemini模型生图 -->
   <div class="wrap">
     <div class="top">
       <div>
@@ -50,12 +51,33 @@
     <div class="grid">
       <div class="card">
         <div class="title">
-          <div class="name">Gemini 生图工具</div>
+          <div class="name">调用官方的Gemini 生图工具</div>
           <div class="badge">文生图/图生图</div>
         </div>
         <div class="desc">上传参考图（可选）+ 输入提示词，批量生成多样化方案，适合电商设计探索。</div>
         <a class="btn" href="./gemini-image/">打开工具 →</a>
       </div>
+
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>AI 工具箱</h1>
+        <p class="sub">一个入口管理多个 n8n 工作流工具。新增工具只需要复制一个文件夹并改 webhook 地址。</p>
+      </div>
+      <div class="badge">v1</div>
+    </div>
+
+    <!-- 调用kie.ai第三方的Gemini模型生图 -->
+    <div class="grid">
+      <div class="card">
+        <div class="title">
+          <div class="name">调用kie.ai的Gemini 生图工具</div>
+          <div class="badge">文生图/图生图</div>
+        </div>
+        <div class="desc">上传参考图（可选）+ 输入提示词，批量生成多样化方案，适合电商设计探索。</div>
+        <a class="btn" href="./gemini-img/">打开工具 →</a>
+      </div>
+      
 
       <!-- 未来新增工具：复制下面这个卡片块，改 href 和文案即可 -->
       <!--
@@ -74,3 +96,4 @@
   </div>
 </body>
 </html>
+
